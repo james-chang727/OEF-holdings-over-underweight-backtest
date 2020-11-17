@@ -1,4 +1,4 @@
-select t1.lipper_id, t1.secID, t1.e_name, t2.t_date, t2.[fund size], t1.fund_manager_benchmark from m_funds t1
+select t1.lipper_id, t1.secID, t1.e_name, t1.isin, t2.t_date, t2.[fund size], t1.fund_manager_benchmark from m_funds t1
 inner join i_volumes t2 
 on t1.SecID = t2.id 
 where geographical_focus = 'Japan' and asset_universe = 'Exchange Traded Funds' and asset_type = 'Equity'
