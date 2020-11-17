@@ -15,7 +15,7 @@ stock_isin = 'JP3914400001'
 benchmark = 'TOPIX'
 
 
-"""Filter out OEFs with geopraphical focus = Japan and add additional benchmark data from mstar&blg and filter out funds benchmarked with TOPIX"""
+"""Filter out OEFs with geopraphical focus = Japan and add additional benchmark data from mstar&blg and filter out funds benchmarked with TOPIX
 
 additional_benchmark = pd.read_excel('data/Mstar_blg_unclassified_benchmark.xlsx', sheet_name=0, usecols="B:C")
 additional_benchmark = dict(zip(additional_benchmark['ISIN'], additional_benchmark['Primary Prospectus Benchmark']))
@@ -29,13 +29,16 @@ df_universe = pd.read_sql(query_universe, conn)
 df_universe['lipper_id'] = df_universe['lipper_id'].apply(lambda x: int(x))
 
 for keys in additional_benchmark:
-    df_universe.at[df_universe[df_universe['isin']==keys].index, 'fund_manager_benchmark'] = additional_benchmark[keys]
+    df_universe.at[df_universe[df_universe['isin']==keys].index, 'fund_manager_benchmark'] = additional_benchmark[keys]"""
+
+# df_universe.to_excel('data/Japan_OEF_universe.xlsx')
 # print(df_universe[df_universe['isin']=='LU1205057935'])
+df_universe = pd.read_excel('data/Japan_OEF_universe.xlsx')
 
 df_Topix_funds = df_universe[df_universe['fund_manager_benchmark'].str.contains('Topix|TOPIX|TPX')]  # Could be changed for different benchmark
 TOPIX_funds_list = df_Topix_funds['lipper_id'].to_list()
 # print(df_Topix_funds)
-# print(len(TOPIX_funds_list))
+# print(len(TOPIX_funds_list)
 
 
 """Start combining 3yrs past holdings data and further filter out funds with frequent holding disclosures to backtest"""
