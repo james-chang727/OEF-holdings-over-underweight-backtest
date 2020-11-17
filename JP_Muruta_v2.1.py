@@ -1,17 +1,20 @@
 import pyodbc
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt 
+from datetime import datetime
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')
 
-conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
-                      'SERVER=192.168.0.242;'
-                      'DATABASE=FundDB;'
-                      'UID=worker;'
-                      'PWD=worker;')
-cursor = conn.cursor()
+# conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
+#                       'SERVER=192.168.0.242;'
+#                       'DATABASE=FundDB;'
+#                       'UID=worker;'
+#                       'PWD=worker;')
+# cursor = conn.cursor()
 
-stock_name = 'Murata'
-stock_isin = 'JP3914400001'
+stock_name = 'Sony'
+stock_isin = 'JP3435000009' #'JP3914400001'
 benchmark = 'TOPIX'
 
 
@@ -61,7 +64,7 @@ min_date = pd.Series(dict((fund, df_holdings_disclosure.groupby('LipperID').get_
 max_date = pd.Series(dict((fund, df_holdings_disclosure.groupby('LipperID').get_group(fund).sort_values(by='Date').iloc[-1][0]) for fund in TOPIX_funds_list), name='max_date')
 df_holdings_des = pd.concat([diclose_freq, min_date, max_date], axis=1)
 
-filt = (df_holdings_des['max_date'] >= '2020/8/31') & (df_holdings_des['# of months count'] >= 25) #could change for different purpose
+filt = (df_holdings_des['max_date'] >= '2020/8/31') & (df_holdings_des['# of months count'] >= 25) # could change for different purpose
 df_funds_chosen = df_holdings_des[filt].sort_values('# of months count', ascending=False) # total 53 funds
 # df_funds_chosen.to_excel(f'Chosen_{benchmark}_funds_DES.xlsx') # save when applied new stock
 
@@ -90,7 +93,7 @@ for date in date_list:
     cnt = len(grp)
     grp.drop(grp[grp['FundAUM']==np.inf].index, inplace=True)
     fund_wgt = sum(grp['MarketValueHeld']) / sum(grp['FundAUM']) * 100
-    fund_wgts.append('{:3f}'.format(fund_wgt))
+    fund_wgts.append(float('{:3f}'.format(fund_wgt)))
     count.append(cnt)
 
 fund_wgts = pd.DataFrame({'FundPoolWeight':fund_wgts, 'Count': count}, index=date_list)
@@ -103,8 +106,11 @@ df_benchmark = pd.read_csv('data/Nomura_NR_Topix_ETF_holdings_3yr.csv') # Change
 df_benchmark = df_benchmark[df_benchmark['ISIN']==stock_isin][['LipperID', 'Date', 'Security', 'WeightCurrent', 'ISIN']]
 
 ## Add missing data if needed from mstar or blg
-missing_data = pd.DataFrame([[62003319, '2019/4/30', 'Murata Maufacturing Co Ltd ORD', 0.8076, 'JP3914400001']
-                            ,[62003319, '2020/3/31', 'Murata Maufacturing Co Ltd ORD', 0.8139, 'JP3914400001']]
+df_missing_benchmark = pd.read_excel('data/Nomura_NR_Topix_ETF_holdings_blg_20200331+20190430.xlsx')
+# 'MURATA MANUFACTURING CO LTD'
+# 'SONY CORP'
+missing_data = pd.DataFrame([[62003319, '2019/4/30', stock_name, float('{:.3f}'.format(df_missing_benchmark[(df_missing_benchmark['Name']=='SONY CORP') & (df_missing_benchmark['Date']=='2019/4/30')]['% Wgt (P)'].values[0])), stock_isin]
+                            ,[62003319, '2020/3/31', stock_name, float('{:.3f}'.format(df_missing_benchmark[(df_missing_benchmark['Name']=='SONY CORP') & (df_missing_benchmark['Date']=='2020/3/31')]['% Wgt (P)'].values[0])), stock_isin]]
                             ,columns=(['LipperID', 'Date', 'Security', 'WeightCurrent', 'ISIN']))
 
 df_benchmark = df_benchmark.append(missing_data, ignore_index=True)
@@ -120,9 +126,10 @@ df_backtest_final['Diff between fund weight and index weight on stock (%, RHS)']
 
 df_backtest_final.rename(columns={'LipperID':'BenchmarkID', 'WeightCurrent':'Benchmark_StockWgt', 'Count':'FundCount', 'FundPoolWeight':'Avg fund invested weight in stock (%, RHS)'}, inplace=True)
 df_backtest_final = df_backtest_final[['BenchmarkID', 'Security', 'ISIN', 'FundCount', 'Benchmark_StockWgt', 'Avg fund invested weight in stock (%, RHS)', 'Diff between fund weight and index weight on stock (%, RHS)']]
+df_backtest_final = df_backtest_final.reindex([idx.strftime(r'%Y-%m-%d') for idx in list(df_backtest_final.index)])
 # print(df_backtest_final.head())
 
-# writer = pd.ExcelWriter(f'results/{stock_name}_backtest_results.xlsx', writer='xlsxwriter')
+# writer = pd.ExcelWriter(f'results/{stock_name}_backtest_results.xlsx', engine='xlsxwriter')
 # df_backtest_final.to_excel(writer, sheet_name='final results')
 # df_stock_weightings.to_excel(writer, sheet_name='selected funds raw data')
 # writer.save()
