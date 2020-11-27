@@ -46,18 +46,18 @@ TOPIX_funds_list = df_Topix_funds['lipper_id'].to_list()
 
 """Start combining 3yrs past holdings data and further filter out funds with frequent holding disclosures to backtest"""
 
-hldgs1_df = pd.read_csv('data/Mutual_funds_JP_20171031~20180228.csv')
-hldgs2_df = pd.read_csv('data/Mutual_funds_JP_20180331~20180831.csv')
-hldgs3_df = pd.read_csv('data/Mutual_funds_JP_20180930~20190228.csv')
-hldgs4_df = pd.read_csv('data/Mutual_funds_JP_20190331~20190831.csv')
-hldgs5_df = pd.read_csv('data/Mutual_funds_JP_20190930~20200229.csv')
-hldgs6_df = pd.read_csv('data/Mutual_funds_JP_20200331~20200930.csv')
+hldgs1_df = pd.read_csv('data/JP_MF_10yr/Mutual_funds_JP_20171031~20180228.csv')
+hldgs2_df = pd.read_csv('data/JP_MF_10yr/Mutual_funds_JP_20180331~20180831.csv')
+hldgs3_df = pd.read_csv('data/JP_MF_10yr/Mutual_funds_JP_20180930~20190228.csv')
+hldgs4_df = pd.read_csv('data/JP_MF_10yr/Mutual_funds_JP_20190331~20190831.csv')
+hldgs5_df = pd.read_csv('data/JP_MF_10yr/Mutual_funds_JP_20190930~20200229.csv')
+hldgs6_df = pd.read_csv('data/JP_MF_10yr/Mutual_funds_JP_20200331~20200930.csv')
 
-df_holdings_3yrs = pd.concat([hldgs1_df, hldgs2_df, hldgs3_df, hldgs4_df, hldgs5_df, hldgs6_df], ignore_index=True)
+df_holdings = pd.concat([hldgs1_df, hldgs2_df, hldgs3_df, hldgs4_df, hldgs5_df, hldgs6_df], ignore_index=True)
 
 
 ## Get Topix funds that fit update frequency and have enough data points to backtest, save to excel
-df_holdings_disclosure = df_holdings_3yrs[['LipperID', 'Date']].drop_duplicates().set_index('LipperID')
+df_holdings_disclosure = df_holdings[['LipperID', 'Date']].drop_duplicates().set_index('LipperID')
 
 diclose_freq = pd.Series(dict((fund, len(df_holdings_disclosure.loc[fund])) for fund in TOPIX_funds_list), name='# of months count')
 min_date = pd.Series(dict((fund, df_holdings_disclosure.groupby('LipperID').get_group(fund).sort_values(by='Date').iloc[0][0]) for fund in TOPIX_funds_list), name='min_date')
@@ -69,8 +69,8 @@ df_funds_chosen = df_holdings_des[filt].sort_values('# of months count', ascendi
 # df_funds_chosen.to_excel(f'Chosen_{benchmark}_funds_DES.xlsx') # save when applied new stock
 
 chosen_fund_list = list(df_funds_chosen.reset_index()['index'].unique())
-filt2 = (df_holdings_3yrs['ISIN'] == stock_isin) & (df_holdings_3yrs['LipperID'].isin(chosen_fund_list)) 
-df_stock_weightings = df_holdings_3yrs[['LipperID', 'Date', 'Security', 'WeightCurrent', 'ISIN', 'MarketValueHeld']][filt2].drop_duplicates(subset=['LipperID','Date'])
+filt2 = (df_holdings['ISIN'] == stock_isin) & (df_holdings['LipperID'].isin(chosen_fund_list)) 
+df_stock_weightings = df_holdings[['LipperID', 'Date', 'Security', 'WeightCurrent', 'ISIN', 'MarketValueHeld']][filt2].drop_duplicates(subset=['LipperID','Date'])
 df_stock_weightings['Date'] = pd.to_datetime(df_stock_weightings['Date'], format=r'%Y/%m/%d')
 
 ## Add Launch date of funds for bookkeeping and write to excel later
