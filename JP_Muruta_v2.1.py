@@ -102,11 +102,11 @@ fund_wgts = pd.DataFrame({'FundPoolWeight':fund_wgts, 'Count': count}, index=dat
 
 """Benchmark investment percentage on chosen stock"""
 
-df_benchmark = pd.read_csv('data/Nomura_NR_Topix_ETF_holdings_3yr.csv') # Change for different benchmark
+df_benchmark = pd.read_csv('data/Benchmark/Nomura_NR_Topix_ETF_holdings_3yr.csv') # Change for different benchmark
 df_benchmark = df_benchmark[df_benchmark['ISIN']==stock_isin][['LipperID', 'Date', 'Security', 'WeightCurrent', 'ISIN']]
 
 ## Add missing data if needed from mstar or blg
-df_missing_benchmark = pd.read_excel('data/Nomura_NR_Topix_ETF_holdings_blg_20200331+20190430.xlsx')
+df_missing_benchmark = pd.read_excel('data/Benchmark/Nomura_NR_Topix_ETF_holdings_blg_20200331+20190430.xlsx')
 # 'MURATA MANUFACTURING CO LTD'
 # 'SONY CORP'
 missing_data = pd.DataFrame([[62003319, '2019/4/30', stock_name, float('{:.3f}'.format(df_missing_benchmark[(df_missing_benchmark['Name']=='SONY CORP') & (df_missing_benchmark['Date']=='2019/4/30')]['% Wgt (P)'].values[0])), stock_isin]
