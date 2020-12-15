@@ -102,7 +102,7 @@ fund_wgts = pd.DataFrame({'FundPoolWeight':fund_wgts, 'Count': count}, index=dat
 
 """Benchmark investment percentage on chosen stock"""
 
-df_benchmark = pd.read_csv('data/Benchmark/Nomura_NR_Topix_ETF_holdings_3yr.csv') # Change for different benchmark
+df_benchmark = pd.read_csv('data/Benchmark/Nomura_NR_Topix_ETF_holdings_2017~2020.csv') # Change for different benchmark
 df_benchmark = df_benchmark[df_benchmark['ISIN']==stock_isin][['LipperID', 'Date', 'Security', 'WeightCurrent', 'ISIN']]
 
 ## Add missing data if needed from mstar or blg
