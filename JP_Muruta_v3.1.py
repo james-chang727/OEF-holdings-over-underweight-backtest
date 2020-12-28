@@ -15,8 +15,8 @@ warnings.filterwarnings('ignore')
 #                       'PWD=worker;')
 # cursor = conn.cursor()
 
-stock_name = 'Murata'
-stock_isin = 'JP3914400001'
+stock_name = 'Sony'
+stock_isin = 'JP3435000009'
 benchmark = 'TOPIX'
 
 
@@ -143,7 +143,7 @@ na_values = [df_stock_weightings[df_stock_weightings['LipperID']==fund_id]['Weig
 na_values_series = pd.DataFrame(na_values, index=chosen_fund_list, columns=['na_values'])
 df_funds_stock_DES = df_funds_chosen.merge(na_values_series, left_index=True, right_index=True)
 # os.mkdir(f'results/{stock_name}')
-# df_funds_stock_DES.to_excel(f'results/{stock_name}/{benchmark}_funds_{stock_name}_DES.xlsx')
+df_funds_stock_DES.to_excel(f'results/{stock_name}/{benchmark}_funds_{stock_name}_DES.xlsx')
 
 
 """Get aggregated fund investment weight on stock chosen to backtest, count the different funds investing in the stock for each period"""
@@ -167,7 +167,7 @@ df_stock_wgts_final['MarketValueHeld'] = df_stock_wgts_final['FundAUM'] * (df_st
 date_list = sorted(df_stock_weightings['Date'].unique())
 
 # df_stock_weightings['FundAUM'] = df_stock_weightings['MarketValueHeld'] / (df_stock_weightings['WeightCurrent']/100)
-date_grp = df_stock_weightings.groupby('Date')
+date_grp = df_stock_wgts_final.groupby('Date')
 
 fund_wgts = []
 count = []
@@ -219,8 +219,8 @@ df_backtest_final['Security'] = stock_name
 df_backtest_final['ISIN'] = stock_isin
 # print(df_backtest_final.head())
 
-# writer = pd.ExcelWriter(f'results/{stock_name}/{stock_name}_backtest_results_10yr.xlsx', writer='xlsxwriter')
-# df_backtest_final.to_excel(writer, sheet_name='final results')
-# df_stock_weightings.set_index('LipperID').to_excel(writer, sheet_name='selected funds raw data')
-# df_stock_wgts_final.set_index('LipperID').to_excel(writer, sheet_name='fillna-ed funds data')
-# writer.save()
+writer = pd.ExcelWriter(f'results/{stock_name}/{stock_name}_backtest_results_10yr.xlsx', writer='xlsxwriter')
+df_backtest_final.to_excel(writer, sheet_name='final results')
+df_stock_weightings.set_index('LipperID').to_excel(writer, sheet_name='selected funds raw data')
+df_stock_wgts_final.set_index('LipperID').to_excel(writer, sheet_name='fillna-ed funds data')
+writer.save()
